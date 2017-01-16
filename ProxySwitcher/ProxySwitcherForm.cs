@@ -14,15 +14,10 @@ namespace ProxySwitcher
 {
     public partial class ProxySwitcherForm : Form
     {
-        [DllImport("wininet.dll")]
-        public static extern bool InternetSetOption(IntPtr hInternet, int dwOption, IntPtr lpBuffer, int dwBufferLength);
-        public const int INTERNET_OPTION_SETTINGS_CHANGED = 39;
-        public const int INTERNET_OPTION_REFRESH = 37;
-        static bool settingsReturn, refreshReturn;
-
+        
         private NotifyIcon trayIcon;
         private ContextMenu trayMenu;
-        RegistryKey registry = Registry.CurrentUser.OpenSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings", true);
+        private Proxy proxy;
 
         public ProxySwitcherForm()
         {
@@ -46,6 +41,8 @@ namespace ProxySwitcher
             trayIcon.ContextMenu = trayMenu;
             trayIcon.Visible = true;
 
+            // Get Proxy Settings
+            proxy = new Proxy();
             CheckAndRefreshProxy();
         }
 
@@ -75,13 +72,8 @@ namespace ProxySwitcher
 
         private void CheckAndRefreshProxy()
         {
-            // Refresh System
-            settingsReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_SETTINGS_CHANGED, IntPtr.Zero, 0);
-            refreshReturn = InternetSetOption(IntPtr.Zero, INTERNET_OPTION_REFRESH, IntPtr.Zero, 0);
-
-            // Check Proxy Reg Key
-            int proxyStatus = (int)registry.GetValue("ProxyEnable");
-            if (proxyStatus == 1)
+            var status = proxy.CheckAndRefreshProxy();
+            if (status == 1)
             {
                 trayIcon.Text = "ProxySwitcher>Proxy On";
                 trayIcon.Icon = ProxySwitcher.Properties.Resources.connect;
@@ -91,22 +83,18 @@ namespace ProxySwitcher
                 trayIcon.Icon = ProxySwitcher.Properties.Resources.bild;
                 trayIcon.Text = "ProxySwitcher>Proxy Off";
             }
-                
         }
 
         private void OnEnableProxy(object sender, EventArgs e)
         {
-            registry.SetValue("ProxyEnable", 1);
+            proxy.enable();
             CheckAndRefreshProxy();
         }
 
         private void OnDisableProxy(object sender, EventArgs e)
         {
-            registry.SetValue("ProxyEnable", 0);
+            proxy.disable();
             CheckAndRefreshProxy();
         }
-
-
-
     }
 }
