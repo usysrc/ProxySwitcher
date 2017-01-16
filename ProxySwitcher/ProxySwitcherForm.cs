@@ -33,7 +33,6 @@ namespace ProxySwitcher
             trayMenu.MenuItems.Add("EnableProxy", OnEnableProxy);
             trayMenu.MenuItems.Add("DisableProxy", OnDisableProxy);
             trayMenu.MenuItems.Add("Exit", OnExit);
-           
 
             // Create a tray icon
             trayIcon = new NotifyIcon();
@@ -42,7 +41,7 @@ namespace ProxySwitcher
             // Add MouseOver Handler
             trayIcon.MouseMove += TrayIcon_MouseMove;
             trayIcon.Icon = ProxySwitcher.Properties.Resources.bild;
-    
+            
             // Add menu to tray icon and show it.
             trayIcon.ContextMenu = trayMenu;
             trayIcon.Visible = true;
@@ -83,9 +82,16 @@ namespace ProxySwitcher
             // Check Proxy Reg Key
             int proxyStatus = (int)registry.GetValue("ProxyEnable");
             if (proxyStatus == 1)
+            {
                 trayIcon.Text = "ProxySwitcher>Proxy On";
+                trayIcon.Icon = ProxySwitcher.Properties.Resources.connect;
+            }
             else
+            {
+                trayIcon.Icon = ProxySwitcher.Properties.Resources.bild;
                 trayIcon.Text = "ProxySwitcher>Proxy Off";
+            }
+                
         }
 
         private void OnEnableProxy(object sender, EventArgs e)
