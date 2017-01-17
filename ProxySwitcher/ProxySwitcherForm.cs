@@ -24,7 +24,8 @@ namespace ProxySwitcher
             InitializeComponent();
 
             trayMenu = new ContextMenu();
-            trayMenu.MenuItems.Add("Properties", OnProperties);
+            trayMenu.MenuItems.Add("Options", OnOptions);
+            trayMenu.MenuItems.Add("inetcpl", OnProperties);
             trayMenu.MenuItems.Add("EnableProxy", OnEnableProxy);
             trayMenu.MenuItems.Add("DisableProxy", OnDisableProxy);
             trayMenu.MenuItems.Add("Exit", OnExit);
@@ -44,6 +45,13 @@ namespace ProxySwitcher
             // Get Proxy Settings
             proxy = new Proxy();
             CheckAndRefreshProxy();
+        }
+
+        private void OnOptions(object sender, EventArgs e)
+        {
+            Visible = true;
+            var startup = new Startup();
+            checkBox1.Checked = startup.isEnabled();
         }
 
         private void OnProperties(object sender, EventArgs e)
@@ -70,10 +78,18 @@ namespace ProxySwitcher
             Application.Exit();
         }
 
+        private void ProxySwitcherForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            if (Visible)
+                e.Cancel = true;
+            Visible = false;
+        }
+
         private void CheckAndRefreshProxy()
         {
-            var status = proxy.CheckAndRefreshProxy();
-            if (status == 1)
+            proxy.Refresh();
+
+            if (proxy.isEnabled())
             {
                 trayIcon.Text = "ProxySwitcher>Proxy On";
                 trayIcon.Icon = ProxySwitcher.Properties.Resources.connect;
@@ -87,14 +103,34 @@ namespace ProxySwitcher
 
         private void OnEnableProxy(object sender, EventArgs e)
         {
-            proxy.enable();
+            proxy.Enable();
             CheckAndRefreshProxy();
         }
 
         private void OnDisableProxy(object sender, EventArgs e)
         {
-            proxy.disable();
+            proxy.Disable();
             CheckAndRefreshProxy();
+        }
+
+        private void ProxySwitcherForm_Load(object sender, EventArgs e)
+        {
+
+        }
+
+        private void checkBox1_CheckedChanged(object sender, EventArgs e)
+        {
+            var startup = new Startup();
+            CheckBox chk = (CheckBox)sender;
+            if (chk.Checked)
+                startup.Enable();
+            else
+                startup.Disable();
+        }
+
+        private void panel1_Paint(object sender, PaintEventArgs e)
+        {
+
         }
     }
 }
